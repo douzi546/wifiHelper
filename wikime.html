@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    body {
+      background-color: #092B40;
+      width: 80%;
+      margin: 10px auto;
+      font-size: 18px;
+      color: white;
+    }
+
+    ul,
+    li,
+    input,
+    button,
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      list-style: none;
+    }
+
+    input,
+    button {
+      border-width: 0;
+      background-color: transparent;
+      color: white;
+      outline: none;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin-bottom: 16px;
+    }
+
+    a {
+      text-decoration: none;
+      color: black;
+    }
+
+    #search {
+      margin-top: 200px;
+      text-align: center;
+    }
+
+    #search button:hover {
+      cursor: pointer;
+    }
+
+    #search .button {
+      font-size: 100%;
+      height: 100%;
+    }
+
+    #search form,
+    #search>div,
+    #search div.input-box-wrap,
+    #search div.input-box {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #search>div {
+      margin: 32px auto;
+    }
+
+    form {
+      margin: 32px auto;
+    }
+
+    #search .input-box-wrap {
+      height: 30px;
+      width: 320px;
+      margin-bottom: 36px;
+      position: relative;
+    }
+
+    #search .input-box-wrap .input-box {
+      width: 30px;
+      height: 100%;
+      border: 4px solid #D96F32;
+      border-radius: 20px;
+      background-color: #092B40;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #search .input-box-wrap .collpased {
+      cursor: pointer;
+    }
+
+    #search .input-box-wrap .input-box input {
+      width: 100%;
+      height: 100%;
+      font-size: 100%;
+      display: none;
+    }
+
+    /* //搜索框尾巴 */
+
+    #search .input-box-wrap div.tail,
+    #search .input-box-wrap div.close {
+      position: absolute;
+      background-color: #D96F32;
+      border-radius: 1;
+    }
+
+    #search .input-box-wrap .tail {
+      height: 3px;
+      width: 30px;
+      transform: translate(-50%, -50%) rotate(45deg);
+      left: 172px;
+      top: 31px;
+      z-index: -1;
+    }
+
+    /* //关闭框  */
+
+    #search .input-box-wrap .input-box .shrink {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      right: 10px;
+      top: 0px;
+      background-color: transparent;
+      display: none;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    #search .input-box-wrap div.close {
+      width: 20px;
+      height: 2px;
+      top: 40px;
+      right: -10px;
+      transform: translate(0, -50%) rotate(45deg);
+    }
+
+    #search .input-box-wrap div.close.up {
+      transform: translate(0, -50%) rotate(-45deg);
+      top: -10px;
+      right: -10px;
+    }
+
+    #result {
+      display: none;
+    }
+
+    #result li {
+      padding-left: 6px;
+    }
+
+    #result li:hover {
+      background-color: #D86F32;
+    }
+
+    #result li a {
+      display: block;
+      padding: 16px 10px 2px 25px;
+      background-color: #E6E6E7;
+      margin-bottom: 17px;
+    }
+  </style>
+</head>
+
+<body>
+  <section id="search">
+    <div>
+      <a href="http://en.wikipedia.org/wiki/Special:Random" target="_blank">
+        <button class="button">
+          Click here for a random article
+        </button>
+      </a>
+    </div>
+    <form>
+      <div class="input-box-wrap">
+        <div class="input-box collpased">
+          <input type="text">
+          <div class="shrink"></div>
+          <div class="close down"></div>
+          <div class="close up"></div>
+
+        </div>
+        <div class="tail"></div>
+      </div>
+      <p>click icon to search</p>
+    </form>
+
+  </section>
+  <section id="result">
+  </section>
+
+  <script src="./jquery-1.12.4.js"></script>
+  <script>
+    $(function () {
+      var $inputBoxWrap = $(".input-box-wrap");
+      var $inputBox = $(".input-box")
+      var $tail = $(".tail");
+      var $down = $(".down");
+      var $up = $(".up");
+      var $shrink = $(".shrink")
+      var $input = $("input")
+      var $search = $("#search")
+      var searchNum = 12
+      var $result = $("#result")
+      var wikiItemBaseUrl = "https://en.wikipedia.org/wiki/"
+
+      $("form").on("submit", function (event) {
+        event.preventDefault();
+        $search.animate({
+          "margin-top": "0px",
+        }, 200);
+        $("form>p").hide();
+        var searchStr = $input.val();
+        $.ajax({
+          url: "https://en.wikipedia.org/w/api.php?&action=query&format=json&list=search&srsearch=" + encodeURIComponent(searchStr) + "&srlimit=" + searchNum + "&srprop=snippet",
+          dataType: "jsonp",
+          success: function (data) {
+            var resultNum = data.continue.sroffset
+            var $ul = $result.html("<ul></ul>").find("ul")
+            for (i = 0; i < resultNum; i++) {
+              $ul.append('<li><a href=" " target="_blank"><h3></h3><p></p></a></li>')
+            }
+            $.each(data.query.search, function (index, val) {
+              var $a = $("#result a")
+              var currentA = $a.eq(index)
+              currentA.find("h3").html(val.title)
+              currentA.find("p").html(val.snippet)
+              currentA.attr("href", wikiItemBaseUrl + val.title)
+              $result.show()
+            })
+          }
+        });
+      })
+
+      $inputBoxWrap.on("click", ".collpased", function () {
+        expandSearchInput();
+
+      })
+      $inputBoxWrap.on("click", ".shrink", function () {
+        shrinkSearchInput();
+
+      })
+
+
+      function expandSearchInput() {
+        $tail.animate(
+          {
+            "width": "0px"
+          }, 200, function () {
+            $inputBox.animate({
+              "width": "200px",
+              "padding": "0 45px 0 15px"
+            }, 200, function () {
+              $up.animate({
+                "right": "15px",
+                "top": "15px",
+              }, 200);
+              $down.animate({
+                "right": "15px",
+                "top": "15px",
+              }, 200, function () {
+                $input.show().focus();
+                $inputBox.removeClass("collpased");
+                $shrink.show();
+              });
+            })
+          })
+      }
+
+      function shrinkSearchInput() {
+        $input.val("");
+        $("form>p").show();
+        $result.hide();
+        $search.animate({
+          "margin-top": "200px"
+        }, 200)
+
+
+        $up.animate({
+          "right": "-10px",
+          "top": "-10px",
+        }, 200);
+        $down.animate({
+          "right": "-10px",
+          "top": "40px",
+        }, 200, function () {
+          $inputBox.animate({
+            "width": "30px",
+            "padding": "0",
+          }, 200, function () {
+            $tail.animate({
+              "width": "30px"
+            }, 200, function () {
+              $shrink.hide();
+              $inputBox.addClass("collpased");
+              $input.hide();
+            })
+          })
+        })
+      }
+    })
+  </script>
+</body>
+
+</html>
